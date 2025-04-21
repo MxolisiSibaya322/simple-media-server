@@ -1,0 +1,19 @@
+{
+  "name": "simple-media-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MxolisiSibaya322/simple-media-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MxolisiSibaya322/simple-media-server/issues"
+  },
+  "homepage": "https://github.com/MxolisiSibaya322/simple-media-server#readme"
+}
