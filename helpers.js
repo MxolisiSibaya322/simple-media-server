@@ -34,7 +34,7 @@ if (
 ) {
     return false
 }
-return true
+    return true
 }
 
 const checkFields = (requiredFields,data)=>{
@@ -56,6 +56,5 @@ for(let i =0;i<mediaData[type].length;i++){
 const deleteItem = (id,type)=>{
 mediaData[type] =mediaData[type].filter((item)=> item.id != id)
 }
-
 
 module.exports =  {validMovies,validSeries,validSongs,checkFields,updateItem,deleteItem} 

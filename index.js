@@ -18,14 +18,12 @@ const server = http.createServer((req, res) => {
     const  data =  (body)?JSON.parse(body):{};
     let invalidFields = "";
     if (req.method === "GET") {
-      let responseBody = '';
-  
+
       switch (req.url) {
         case "/movies":
         case "/series":
         case "/songs":
-          responseBody = mediaData[req.url.slice(1)];
-          sendJSON(responseBody);
+          sendJSON(mediaData[req.url.slice(1)]);
           break;
         default:
           sendJSON({ message: "Route not found" }, 404);
