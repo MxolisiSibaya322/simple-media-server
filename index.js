@@ -67,7 +67,7 @@ const server = http.createServer((req, res) => {
 
         if (["movies","series","songs"].includes(type)){
           deleteItem(id,type);
-          sendJSON({ message: "Movie deleted successfully", AllMovies: mediaData.movies }, 200);
+          sendJSON({ message: `${type} deleted successfully`, AllItems: mediaData[type] }, 200);
         }else{
           sendJSON({ message: "Route not found" }, 404);
         }
