@@ -1,10 +1,12 @@
 const http = require('http');
 const mediaData = require('./mediaData');
-const {validMovies,validSeries,validSongs
+const {writeDatabase,readDatabase,validMovies,validSeries,validSongs
   ,checkFields,updateItem,deleteItem} = require('./helpers'); 
 const PORT = 3000;
 const server = http.createServer((req, res) => {
+
   const sendJSON = (data, statusCode = 200) => {
+    
     res.writeHead(statusCode, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(data));
   };
@@ -14,7 +16,7 @@ const server = http.createServer((req, res) => {
     body += chunk.toString();
   });
   
-  req.on('end', () => {
+  req.on('end', async () => {
     const  data =  (body)?JSON.parse(body):{};
     let invalidFields = "";
     if (req.method === "GET") {
@@ -23,7 +25,8 @@ const server = http.createServer((req, res) => {
         case "/movies":
         case "/series":
         case "/songs":
-          sendJSON(mediaData[req.url.slice(1)]);
+          const resData =await readDatabase("database.json",req.url.slice(1))
+          sendJSON(resData);
           break;
         default:
           sendJSON({ message: "Route not found" }, 404);
@@ -36,7 +39,7 @@ const server = http.createServer((req, res) => {
           invalidFields= checkFields(mediaData.moviesRequiredFields,data);
           invalidFields!==""? sendJSON({ message: `Missing field: ${invalidFields}` }, 400):"Passed Validation";
           if (!validMovies(data))  return sendJSON({ message: 'Invalid data types in request body' }, 400);
-          mediaData.movies.push({id:mediaData.movies.length+1, ...data});
+          writeDatabase
           sendJSON({ message: "Movie added successfully", AllMovies: mediaData.movies }, 201);
           break;
         case "/series":
