@@ -1,6 +1,6 @@
 const http = require('http');
 const mediaData = require('./mediaData');
-const {writeDatabase,readDatabase,validMovies,validSeries,validSongs
+const {checkDatabase,writeDatabase,readDatabase,validMovies,validSeries,validSongs
   ,checkFields,updateItem,deleteItem} = require('./helpers'); 
 const PORT = 3000;
 const server = http.createServer((req, res) => {
@@ -19,6 +19,7 @@ const server = http.createServer((req, res) => {
   req.on('end', async () => {
     const  data =  (body)?JSON.parse(body):{};
     let invalidFields = "";
+    await checkDatabase();
     if (req.method === "GET") {
 
       switch (req.url) {
@@ -39,15 +40,15 @@ const server = http.createServer((req, res) => {
           invalidFields= checkFields(mediaData.moviesRequiredFields,data);
           invalidFields!==""? sendJSON({ message: `Missing field: ${invalidFields}` }, 400):"Passed Validation";
           if (!validMovies(data))  return sendJSON({ message: 'Invalid data types in request body' }, 400);
-          writeDatabase
-          sendJSON({ message: "Movie added successfully", AllMovies: mediaData.movies }, 201);
+          const movies =await writeDatabase(data,"movies");
+          sendJSON({ message: "Movie added successfully", AllMovies: movies}, 201);
           break;
         case "/series":
           invalidFields= checkFields(mediaData.seriesRequiredFields,data);
           invalidFields!==""? sendJSON({ message: `Missing field: ${invalidFields}` }, 400):"Passed Validation";      
           if(!validSeries(data)) return sendJSON({ message: 'Invalid data types in request body' }, 400);
-          mediaData.series.push({id:mediaData.series.length+1, ...data});
-          sendJSON({ message: "Series added successfully", AllSeries: mediaData.series }, 201);
+          const series = await writeDatabase(data,"series");
+          sendJSON({ message: "Series added successfully", AllSeries: series }, 201);
           break;
         case "/songs":
         
@@ -55,8 +56,8 @@ const server = http.createServer((req, res) => {
           invalidFields!==""? sendJSON({ message: `Missing field: ${invalidFields}` }, 400):"Passed Validation";
           if(!validSongs(data)) return sendJSON({ message: 'Invalid data types in request body' }, 400);
 
-          mediaData.songs.push({id:mediaData.songs.length+1, ...data});
-          sendJSON({ message: "Song added successfully", AllSongs: mediaData.songs }, 201);
+          const songs = await writeDatabase(data,"songs");
+          sendJSON({ message: "Song added successfully", AllSongs: songs }, 201);
           break;
         default:
           sendJSON({ message: "Route not found" }, 404);
@@ -69,8 +70,8 @@ const server = http.createServer((req, res) => {
         const id = parseInt(arrParams[1]);
 
         if (["movies","series","songs"].includes(type)){
-          deleteItem(id,type);
-          sendJSON({ message: `${type} deleted successfully`, AllItems: mediaData[type] }, 200);
+          const items = await deleteItem(id,type);
+          sendJSON({ message: `${type} deleted successfully`, AllItems: items }, 200);
         }else{
           sendJSON({ message: "Route not found" }, 404);
         }
@@ -85,22 +86,22 @@ const server = http.createServer((req, res) => {
               invalidFields= checkFields(mediaData.moviesRequiredFields,data);
               invalidFields!==""? sendJSON({ message: `Missing field: ${invalidFields}` }, 400):"Passed Validation";
               if (!validMovies)  return sendJSON({ message: 'Invalid data types in request body' }, 400);
-              updateItem(data,id,type);
-              sendJSON({ message: "Movie updated successfully", AllMovies: mediaData.movies }, 200);
+              const movies =await updateItem(data,id,type);
+              sendJSON({ message: "Movie updated successfully", AllMovies: movies }, 200);
               break;
             case "series":
               invalidFields= checkFields(mediaData.seriesRequiredFields,data);
               invalidFields!==""? sendJSON({ message: `Missing field: ${invalidFields}` }, 400):"Passed Validation";      
               if(!validSeries(data)) return sendJSON({ message: 'Invalid data types in request body' }, 400);
-              updateItem(data,id,type);
-              sendJSON({ message: "series updated successfully", AllSeries: mediaData.series }, 200);
+              const series =await updateItem(data,id,type);
+              sendJSON({ message: "series updated successfully", AllSeries: series }, 200);
               break;
             case "songs":
               invalidFields= checkFields(mediaData.songsRequiredFields,data);
               invalidFields!==""? sendJSON({ message: `Missing field: ${invalidFields}` }, 400):"Passed Validation";
               if(!validSongs(data)) return sendJSON({ message: 'Invalid data types in request body' }, 400);
-              updateItem(data,id,type);
-              sendJSON({ message: "song updated successfully", AllSongs: mediaData.songs }, 200);
+              const songs =await updateItem(data,id,type);
+              sendJSON({ message: "song updated successfully", AllSongs: songs }, 200);
               break;
             default:
               sendJSON({ message: "Route not found" }, 404);

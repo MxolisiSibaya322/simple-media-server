@@ -45,16 +45,24 @@ for (let field of requiredFields) {
 }
 return ""
 }
-const updateItem = (data,id,type)=>{
-for(let i =0;i<mediaData[type].length;i++){
-    if (mediaData[type][i].id === id){
-    mediaData[type][i] = {id:id,...data}
+const updateItem =async (data,id,type)=>{
+let database = await readDatabase("database.json");
+  
+for(let i =0;i<database[type].length;i++){
+    if (database[type][i].id === id){
+      database[type][i] = {id:id,...data}
+      break;
     } 
 }
+await writeDatabase(database);
+return database[type];
 
 }
-const deleteItem = (id,type)=>{
-mediaData[type] =mediaData[type].filter((item)=> item.id != id)
+const deleteItem = async(id,type)=>{
+let database = await readDatabase("database.json")
+database[type] =database[type].filter((item)=> item.id != id);
+await writeDatabase(database);
+return database[type];
 }
 
 
@@ -62,22 +70,43 @@ const readDatabase = (FILE_NAME,type)=> {
   try {
     const data =  fs.readFileSync(FILE_NAME, 'utf-8');
     const parsedData =JSON.parse(data);
-    return parsedData[type]; 
+    return type?  parsedData[type]: parsedData; 
   } catch (error) {
     console.error('Error reading database:', error.message);
     return null;
   }
 }
-const writeDatabase= (data)=> {
+const writeDatabase= async(data,type)=> {
     try {
-      fs.writeFileSync('database.json', JSON.stringify(data, null, 2)); // pretty print JSON
-      console.log('Database updated successfully.');
+      if(type){
+        let database = await readDatabase("database.json");
+        database[type].push({id:database[type].length+1,...data});
+        fs.writeFileSync('database.json', JSON.stringify(database, null, 2)); 
+        return database[type]
+      }else{
+        fs.writeFileSync('database.json', JSON.stringify(data, null, 2)); 
+        return
+      }
+     
+      
     } catch (error) {
       console.error('Error writing to database:', error.message);
+    }
+  }
+
+  const checkDatabase =async ()=>{
+    let database = await readDatabase("database.json");
+    if(!database){
+      data={
+        movies:[],
+        series:[],
+        songs:[]
+      }
+      await writeDatabase(data);
     }
   }
   
 
 
 
-module.exports =  {writeDatabase,readDatabase,validMovies,validSeries,validSongs,checkFields,updateItem,deleteItem} 
+module.exports =  {checkDatabase,writeDatabase,readDatabase,validMovies,validSeries,validSongs,checkFields,updateItem,deleteItem} 
